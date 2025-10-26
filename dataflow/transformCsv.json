@@ -1,0 +1,81 @@
+{
+	"name": "transformCsv",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "dataflow_source1",
+						"type": "DatasetReference"
+					},
+					"name": "sourceCsv"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dataflowsink",
+						"type": "DatasetReference"
+					},
+					"name": "sink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "selectCols"
+				},
+				{
+					"name": "filterRows"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "aggregate"
+				},
+				{
+					"name": "alterRow"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          EMPNO as integer,",
+				"          ENAME as string,",
+				"          JOB as string,",
+				"          MGR as short,",
+				"          HIREDATE as string,",
+				"          SAL as short,",
+				"          COMM as short,",
+				"          DEPTNO as short",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceCsv",
+				"sourceCsv select(mapColumn(",
+				"          EMPNO,",
+				"          ENAME,",
+				"          JOB,",
+				"          SAL,",
+				"          DEPTNO",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectCols",
+				"selectCols filter(JOB !='MANAGER') ~> filterRows",
+				"filterRows split(DEPTNO ==10,",
+				"     DEPTNO==20,",
+				"     disjoint: false) ~> split1@(deptnocondition10, deptcondition20, otherThandeptno)",
+				"split1@deptnocondition10 aggregate(groupBy(JOB),",
+				"     SAL = max(SAL)) ~> aggregate",
+				"aggregate alterRow(insertIf(1==1)) ~> alterRow",
+				"alterRow sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink"
+			]
+		}
+	}
+}
