@@ -1,0 +1,20 @@
+{
+	"name": "sink_nyc",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage_link",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "nyc_data",
+				"fileSystem": "destination"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
